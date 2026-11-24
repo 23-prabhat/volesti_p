@@ -222,7 +222,25 @@ TEST_CASE("ess") {
 }
 
 TEST_CASE("geweke") {
-    call_test_geweke<double>();
+    SUBCASE("sampled cube") {
+        call_test_geweke<double>();
+    }
+
+    SUBCASE("upper-tail rejection") {
+        Eigen::Matrix<double, 2, 4> segment;
+        segment << 1, -1, 0,  0,
+                   0,  0, 1, -1;
+        Eigen::MatrixXd samples = Eigen::MatrixXd::Zero(2, 16);
+        samples.leftCols(4) = segment;
+        samples.rightCols(4) = segment;
+
+        CHECK(perform_geweke<Eigen::VectorXd>(samples, 0.25, 0.25, 0.05));
+
+        // This shift gives F = 6.328125 and an upper-tail p-value of about 0.043.
+        samples.row(0).tail(4).array() += 2.25;
+        CHECK_FALSE(perform_geweke<Eigen::VectorXd>(samples, 0.25, 0.25, 0.05));
+        CHECK(perform_geweke<Eigen::VectorXd>(samples, 0.25, 0.25, 0.01));
+    }
 }
 
 TEST_CASE("raftery") {

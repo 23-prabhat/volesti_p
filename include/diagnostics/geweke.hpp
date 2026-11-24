@@ -66,10 +66,10 @@ bool perform_geweke(MT const& samples,
 
     boost::math::fisher_f dist(d, int(N1) + int(N2) - d - 1);
 
-    NT F1 = boost::math::quantile(dist, alpha / 2.0);
-    NT F2 = boost::math::quantile(boost::math::complement(dist, alpha / 2.0));
+    // Large values of U provide evidence that the means differ.
+    NT critical_value = boost::math::quantile(boost::math::complement(dist, alpha));
 
-    if (U <= F1 || U > F2) { // reject null hypothesis
+    if (U > critical_value) { // reject null hypothesis
         return false;
     }
     return true; // do not reject null hypothesis
